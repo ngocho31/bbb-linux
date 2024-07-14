@@ -4,6 +4,7 @@
 #include <linux/module.h>
 #include <linux/kernel.h>
 #include <linux/utsname.h>
+#include <linux/timekeeping.h>
 
 static char *whom = "world";
 module_param(whom, charp, 0644);
@@ -13,9 +14,13 @@ static int howmany = 1;
 module_param(howmany, int, 0644);
 MODULE_PARM_DESC(howmany, "Number of greetings");
 
+static time64_t time_start;
+static time64_t time_stop;
+
 static int __init hello_init(void)
 {
     int i;
+    time_start = ktime_get_seconds();
 
     pr_info("system name = %s\n", utsname()->sysname);
     pr_info("node name   = %s\n", utsname()->nodename);
@@ -33,6 +38,8 @@ static int __init hello_init(void)
 static void __exit hello_exit(void)
 {
     pr_alert("Good bye!\n");
+    time_stop = ktime_get_seconds();
+    pr_alert("Greeting module run in %llds.\n", time_stop-time_start);
 }
 
 module_init(hello_init);

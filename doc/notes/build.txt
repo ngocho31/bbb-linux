@@ -1,0 +1,77 @@
+Compile BeagleBone Black Linux Kernel Source
+============================================
+
+Using the code base from Linux Kernel source tree managed by Linus Torvalds.
+
+Installing git packages
+$ sudo apt install git gitk git-email
+
+Cloning the mainline Linux tree
+$ git clone https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux
+$ cd linux
+
+Using the Linux 6.7 stable branch for this project
+$ git remote add stable https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux
+$ git fetch stable
+$ git checkout -b 6.7.bbb stable/linux-6.7.y
+
+Check kernel version
+$ make kernelversion
+
+===================
+1. Install packages
+===================
+Packages needed for configuring, compiling
+$ sudo apt install libssl-dev bison flex
+
+Install a cross-compiling toolchain
+$ sudo apt install gcc-arm-linux-gnueabi
+
+=============================
+2. Setup kernel configuration
+=============================
+Specifying the target architecture
+$ export ARCH=arm
+Choosing a compiler
+$ export CROSS_COMPILE=arm-linux-gnueabi-
+
+===============================================
+3. Make bbb default kernel device configuration
+===============================================
+$ make defconfig
+$ make menuconfig
+Enable network over USB
+    CONFIG_USB_GADGET=y
+    CONFIG_USB_MUSB_HDRC=y // Driver for the USB OTG controller
+    CONFIG_USB_MUSB_GADGET=y // Use the USB OTG controller in device (gadget) mode
+    CONFIG_USB_MUSB_DSPS=y
+    Check the dependencies of CONFIG_AM335X_PHY_USB and find the way to set CONFIG_AM335X_PHY_USB=y
+    Find the ”USB Gadget precomposed configurations” menu and set it to static instead of module so that CONFIG_USB_ETH=y
+    Enable booting on an NFS exported root directory
+        CONFIG_ROOT_NFS=y
+(Optional) Reduce boot time
+    Ref: https://bootlin.com/doc/training/boot-time/
+    CONFIG_KERNEL_LZO
+    sudo apt install lzop
+Save config
+$ make savedefconfig
+$ cp defconfig arch/arm/configs/bbb_defconfig
+
+=====================
+4. Build linux kernel
+=====================
+$ cd ./linux
+$ make -j 8
+
+===============
+5. Output files
+===============
+a. arch/<arch>/boot/Image, uncompressed kernel image that can be booted
+b. arch/<arch>/boot/*Image*, compressed kernel images that can also be booted
+    bzImage for x86
+    zImage for ARM
+    Image.gz for RISC-V
+    vmlinux.bin.gz for ARC, etc.
+c. arch/<arch>/boot/dts/<vendor>/*.dtb, compiled Device Tree Blobs
+    arch/arm/boot/dts/ti/omap/am335x-boneblack.dtb
+d. All kernel modules, spread over the kernel source tree, as .ko (Kernel Object) files.

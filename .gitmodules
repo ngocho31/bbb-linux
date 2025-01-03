@@ -1,0 +1,4 @@
+[submodule "kernel"]
+	path = kernel
+	url = git@github.com:ngocho31/linux.git
+	branch = bbb_6.7

@@ -7,12 +7,12 @@ KERNEL_DIR := $(CURDIR)/kernel
 OUTPUT_DIR := $(CURDIR)/output
 
 # The cross-compiler directory
-export PATH := $(PATH):${HOME}/x-tools/arm-training-linux-musleabihf/bin/
+export PATH := $(PATH):${HOME}/x-tools/arm-bbb-linux-musleabihf/bin/
 # The target architecture and platform
 export ARCH := arm
 
 # Cross-compiler settings
-export CROSS_COMPILE := ${HOME}/x-tools/arm-training-linux-musleabihf/bin/arm-linux-
+export CROSS_COMPILE := ${HOME}/x-tools/arm-bbb-linux-musleabihf/bin/arm-linux-
 CC := $(CROSS_COMPILE)gcc
 AS := $(CROSS_COMPILE)as
 LD := $(CROSS_COMPILE)ld

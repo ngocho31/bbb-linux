@@ -3,6 +3,6 @@
     url = git@github.com:ngocho31/linux.git
     branch = bbb_6.7
 [submodule "bootloader"]
-	path = bootloader
-	url = git@github.com:ngocho31/u-boot.git
-	branch = bbb_v2024.04
+    path = bootloader
+    url = git@github.com:ngocho31/u-boot.git
+    branch = bbb_v2024.04

@@ -7,6 +7,7 @@ BUSYBOX_DIR := $(CURDIR)/busybox
 
 # The output directory for compiled binaries
 OUTPUT_DIR := $(CURDIR)/output
+ROOTFS_DIR := $(CURDIR)/platform/nfsroot
 
 # The cross-compiler directory
 export PATH := $(PATH):${HOME}/x-tools/arm-bbb-linux-musleabihf/bin/
@@ -23,23 +24,16 @@ LD := $(CROSS_COMPILE)ld
 UBOOT_CONFIG := am335x_evm_defconfig
 UBOOT_DTB := am335x-boneblack
 
-UBOOT_MAKE_FLAGS_EXTRA := DEVICE_TREE=${UBOOT_DTB}
-
 # Kernel configuration for the target platform
 KERNEL_CONFIG := bbb_defconfig
-KERNEL_DTB_PATH := ${KERNEL_DIR}/arch/arm/boot/dts/ti/omap/am335x-boneblack.dtb
-KERNEL_IMAGE_PATH := ${KERNEL_DIR}/arch/arm/boot/zImage
-
-KERNEL_MAKE_FLAGS_EXTRA := 
+KERNEL_DTB_PATH := ${KERNEL_DIR}/build/arch/arm/boot/dts/ti/omap/am335x-boneblack.dtb
+KERNEL_IMAGE_PATH := ${KERNEL_DIR}/build/arch/arm/boot/zImage
 
 # Busybox configuration for the target platform
 BUSYBOX_CONFIG := bbb_defconfig
 
 # Default target
 all: bootloader kernel rootfs
-bootloader: bootloader_genconfig bootloader_build
-kernel: kernel_genconfig kernel_build
-rootfs: busybox_genconfig rootfs_build
 
 # Clean build directory
 clean:
@@ -48,25 +42,27 @@ clean:
 # Generate U-boot configuration
 bootloader_genconfig:
 	cd $(UBOOT_DIR) ; \
-	make $(UBOOT_CONFIG) ;
+	make $(UBOOT_CONFIG) O=build ;
 
 # Build U-Boot with specific configuration
-bootloader_build:
-	mkdir -p $(OUTPUT_DIR)/u-boot; \
-	cd $(UBOOT_DIR); \
-	make -j 8 $(BOOTLOADER_MAKE_FLAGS_EXTRA) ; \
-	cp $(UBOOT_DIR)/u-boot.dtb $(UBOOT_DIR)/MLO $(UBOOT_DIR)/u-boot.img $(OUTPUT_DIR)/u-boot ;
+bootloader:
+	mkdir -p $(OUTPUT_DIR)/u-boot ; \
+	cd $(UBOOT_DIR) ; \
+	[ ! -f build/.config ] && make $(UBOOT_CONFIG) O=build ; \
+	make -j 8 DEVICE_TREE=${UBOOT_DTB} O=build || exit ; \
+	cp $(UBOOT_DIR)/build/u-boot.dtb $(UBOOT_DIR)/build/MLO $(UBOOT_DIR)/build/u-boot.img $(OUTPUT_DIR)/u-boot ;
 
 # Generate Kernel configuration
 kernel_genconfig:
 	cd $(KERNEL_DIR) ; \
-	make $(KERNEL_CONFIG) ;
+	make $(KERNEL_CONFIG) O=build ;
 
 # Build Kernel with specific configuration
-kernel_build:
+kernel:
 	mkdir -p $(OUTPUT_DIR)/kernel; \
 	cd $(KERNEL_DIR); \
-	make -j 8 $(KERNEL_MAKE_FLAGS_EXTRA) ; \
+	[ ! -f build/.config ] && make $(KERNEL_CONFIG) O=build ; \
+	make -j 8 O=build || exit ; \
 	cp ${KERNEL_DTB_PATH} $(KERNEL_IMAGE_PATH) $(OUTPUT_DIR)/kernel ;
 
 # Generate Busybox configuration
@@ -75,8 +71,14 @@ busybox_genconfig:
 	make $(BUSYBOX_CONFIG) ;
 
 # Generate rootfs from busybox
-rootfs_build:
+rootfs:
+	mkdir -p ${ROOTFS_DIR} ; \
 	cd $(BUSYBOX_DIR) ; \
-	make -j 8 install ;
+	[ ! -f .config ] && make $(BUSYBOX_CONFIG) ; \
+	make -j 8 install || exit ;
+
+# Generate app
+app:
+
 
 .PHONY: all clean bootloader kernel rootfs

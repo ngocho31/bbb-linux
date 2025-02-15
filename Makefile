@@ -4,6 +4,8 @@ UBOOT_DIR := $(CURDIR)/bootloader
 KERNEL_DIR := $(CURDIR)/kernel
 # The Busybox source directory
 BUSYBOX_DIR := $(CURDIR)/busybox
+# The App source directory
+APP_DIR := $(CURDIR)/platform/app
 
 # The output directory for compiled binaries
 OUTPUT_DIR := $(CURDIR)/output
@@ -16,9 +18,9 @@ export ARCH := arm
 
 # Cross-compiler settings
 export CROSS_COMPILE := ${HOME}/x-tools/arm-bbb-linux-musleabihf/bin/arm-linux-
-CC := $(CROSS_COMPILE)gcc
-AS := $(CROSS_COMPILE)as
-LD := $(CROSS_COMPILE)ld
+export CC := $(CROSS_COMPILE)gcc
+export AS := $(CROSS_COMPILE)as
+export LD := $(CROSS_COMPILE)ld
 
 # U-Boot configuration for the target platform
 UBOOT_CONFIG := am335x_evm_defconfig
@@ -79,6 +81,10 @@ rootfs:
 
 # Generate app
 app:
+	mkdir -p $(OUTPUT_DIR)/app; \
+	mkdir -p ${ROOTFS_DIR}/oemapp; \
+	cd $(APP_DIR) ; \
+	make -j 8 all || exit ; \
+	cp -r $(OUTPUT_DIR)/app/* ${ROOTFS_DIR}/oemapp
 
-
-.PHONY: all clean bootloader kernel rootfs
+.PHONY: all clean bootloader kernel rootfs app

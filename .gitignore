@@ -5,3 +5,7 @@ output/
 platform/nfsroot/bin/
 platform/nfsroot/sbin
 platform/nfsroot/usr/
+
+# Application
+platform/nfsroot/oemapp
+.bin

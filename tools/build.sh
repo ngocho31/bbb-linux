@@ -1,43 +1,55 @@
 #!/bin/bash
 
-# Exit on any error
-set -e
+#####################################################################
+# Script Name: Cleaning workspace
+# Description: This script removes build artifacts, temporary files, and generated output.
+# Usage: ./clean.sh
+# Author: Ngoc Ho
+# Date: 2025
+# Version: 1.0
+#####################################################################
 
 #####################################################################
-# Variables
+# Static functions
 #####################################################################
-# Working source dir
-WS_DIR=$(pwd)
-SRC_DIR=$WS_DIR/platform
-KERNEL_SRC=$SRC_DIR/kernel
-TOOLS_DIR=$WS_DIR/tools
+build_bootloader() {
+    echo "Compiling bootloader..."
 
-# Orginal source dir
-ORG_BOOTLOADER=$WS_DIR/bootloader
-ORG_KERNEL=$WS_DIR/kernel
+    make bootloader
+}
 
-#####################################################################
-# Customize
-#####################################################################
-# Install customize source
-cp $KERNEL_SRC/config/bbb_defconfig $ORG_KERNEL/arch/arm/configs
+build_kernel() {
+    echo "Compiling kernel..."
 
-#####################################################################
-# Input
-#####################################################################
-source $TOOLS_DIR/input_handler.sh
+    make kernel
+}
 
-#####################################################################
-# Cleaning
-#####################################################################
-source $TOOLS_DIR/clean.sh
+build_rootfs() {
+    echo "Compiling rootfs..."
+
+    make rootfs
+}
+
+build() {
+    echo "Compiling all..."
+    make all
+}
 
 #####################################################################
-# Main Build
+# Main Script
 #####################################################################
-# Run Makefile
-echo "Starting build process..."
-make all    # Build the project
+if [ $BUILD_OPT == "all" ]; then
+    build ;
+elif [ $BUILD_OPT == "bootloader" ]; then
+    build_bootloader ;
+elif [ $BUILD_OPT == "kernel" ]; then
+    build_kernel ;
+elif [ $BUILD_OPT == "rootfs" ]; then
+    build_rootfs ;
+else
+    echo "Invalid build option."
+    exit 1
+fi
 
 # Check if the build was successful
 if [ $? -eq 0 ]; then

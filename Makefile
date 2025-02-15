@@ -2,6 +2,8 @@
 UBOOT_DIR := $(CURDIR)/bootloader
 # The Kernel source directory
 KERNEL_DIR := $(CURDIR)/kernel
+# The Busybox source directory
+BUSYBOX_DIR := $(CURDIR)/busybox
 
 # The output directory for compiled binaries
 OUTPUT_DIR := $(CURDIR)/output
@@ -30,14 +32,14 @@ KERNEL_IMAGE_PATH := ${KERNEL_DIR}/arch/arm/boot/zImage
 
 KERNEL_MAKE_FLAGS_EXTRA := 
 
-# List of U-Boot targets to build
-BOOTLOADER_TARGETS := bootloader_genconfig bootloader
-
-# List of Kernel targets to build
-KERNEL_TARGETS := kernel_genconfig kernel
+# Busybox configuration for the target platform
+BUSYBOX_CONFIG := bbb_defconfig
 
 # Default target
-all: ${BOOTLOADER_TARGETS} ${KERNEL_TARGETS}
+all: bootloader kernel rootfs
+bootloader: bootloader_genconfig bootloader_build
+kernel: kernel_genconfig kernel_build
+rootfs: busybox_genconfig rootfs_build
 
 # Clean build directory
 clean:
@@ -46,13 +48,13 @@ clean:
 # Generate U-boot configuration
 bootloader_genconfig:
 	cd $(UBOOT_DIR) ; \
-	make -j 4 $(UBOOT_CONFIG) ;
+	make $(UBOOT_CONFIG) ;
 
 # Build U-Boot with specific configuration
-bootloader:
+bootloader_build:
 	mkdir -p $(OUTPUT_DIR)/u-boot; \
 	cd $(UBOOT_DIR); \
-	make -j 4 $(BOOTLOADER_MAKE_FLAGS_EXTRA) ; \
+	make -j 8 $(BOOTLOADER_MAKE_FLAGS_EXTRA) ; \
 	cp $(UBOOT_DIR)/u-boot.dtb $(UBOOT_DIR)/MLO $(UBOOT_DIR)/u-boot.img $(OUTPUT_DIR)/u-boot ;
 
 # Generate Kernel configuration
@@ -61,10 +63,20 @@ kernel_genconfig:
 	make $(KERNEL_CONFIG) ;
 
 # Build Kernel with specific configuration
-kernel:
+kernel_build:
 	mkdir -p $(OUTPUT_DIR)/kernel; \
 	cd $(KERNEL_DIR); \
 	make -j 8 $(KERNEL_MAKE_FLAGS_EXTRA) ; \
 	cp ${KERNEL_DTB_PATH} $(KERNEL_IMAGE_PATH) $(OUTPUT_DIR)/kernel ;
 
-.PHONY: all clean bootloader_genconfig bootloader kernel_genconfig kernel
+# Generate Busybox configuration
+busybox_genconfig:
+	cd $(BUSYBOX_DIR) ; \
+	make $(BUSYBOX_CONFIG) ;
+
+# Generate rootfs from busybox
+rootfs_build:
+	cd $(BUSYBOX_DIR) ; \
+	make -j 8 install ;
+
+.PHONY: all clean bootloader kernel rootfs

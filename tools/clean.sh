@@ -9,6 +9,9 @@
 # Version: 1.0
 #####################################################################
 
+#####################################################################
+# Static functions
+#####################################################################
 clean_bootloader() {
     echo "Cleaning up bootloader source code directory..."
 
@@ -23,6 +26,13 @@ clean_kernel() {
     make distclean
 }
 
+clean_busybox() {
+    echo "Cleaning up kernel source code directory..."
+
+    cd $ORG_BUSYBOX
+    make distclean
+}
+
 clean_platform() {
     echo "Cleaning up output of platform..."
 
@@ -34,20 +44,26 @@ clean() {
 
     clean_bootloader ;
     clean_kernel ;
+    clean_busybox ;
     clean_platform ;
 }
 
-if [ $CLEAN == 0 ]; then
+#####################################################################
+# Main Script
+#####################################################################
+if [ $CLEAN_OPT == 0 ]; then
     echo "No cleaning workspace..."
-elif [ $CLEAN == 1 ]; then
+elif [ $CLEAN_OPT == "all" ]; then
     clean ;
-elif [ $CLEAN == 2 ]; then
+elif [ $CLEAN_OPT == "bootloader" ]; then
     clean_bootloader ;
-elif [ $CLEAN == 3 ]; then
+elif [ $CLEAN_OPT == "kernel" ]; then
     clean_kernel ;
-elif [ $CLEAN == 4 ]; then
+elif [ $CLEAN_OPT == "busybox" ]; then
+    clean_busybox ;
+elif [ $CLEAN_OPT == "platform" ]; then
     clean_platform ;
 else
-    echo "Invalid cleaning input value."
+    echo "Invalid clean option."
     exit 1
 fi

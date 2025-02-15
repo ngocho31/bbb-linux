@@ -1,2 +1,7 @@
 # Output
 output/
+
+# Generated rootfs
+platform/nfsroot/bin/
+platform/nfsroot/sbin
+platform/nfsroot/usr/

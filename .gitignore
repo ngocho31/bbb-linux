@@ -5,6 +5,7 @@ output/
 platform/nfsroot/bin/
 platform/nfsroot/sbin
 platform/nfsroot/usr/
+platform/nfsroot/lib/modules
 
 # Application
 platform/nfsroot/oemapp

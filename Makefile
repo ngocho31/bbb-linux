@@ -10,6 +10,7 @@ APP_DIR := $(CURDIR)/platform/app
 # The output directory for compiled binaries
 OUTPUT_DIR := $(CURDIR)/output
 ROOTFS_DIR := $(CURDIR)/platform/nfsroot
+KERNEL_CFG_DIR := $(CURDIR)/platform/kernel/config
 
 # The cross-compiler directory
 export PATH := $(PATH):${HOME}/x-tools/arm-bbb-linux-musleabihf/bin/
@@ -37,10 +38,6 @@ BUSYBOX_CONFIG := bbb_defconfig
 # Default target
 all: bootloader kernel rootfs
 
-# Clean build directory
-clean:
-	$(MAKE) -C $(UBOOT_DIR) distclean
-
 # Generate U-boot configuration
 bootloader_genconfig:
 	cd $(UBOOT_DIR) ; \
@@ -53,6 +50,13 @@ bootloader:
 	[ ! -f build/.config ] && make $(UBOOT_CONFIG) O=build ; \
 	make -j 8 DEVICE_TREE=${UBOOT_DTB} O=build || exit ; \
 	cp $(UBOOT_DIR)/build/u-boot.dtb $(UBOOT_DIR)/build/MLO $(UBOOT_DIR)/build/u-boot.img $(OUTPUT_DIR)/u-boot ;
+
+# Modify Kernel configuration
+kernel_menuconfig:
+	cd $(KERNEL_DIR) ; \
+	make $(KERNEL_CONFIG) menuconfig O=build ; \
+	make savedefconfig O=build ; \
+	cp build/defconfig $(KERNEL_CFG_DIR)/$(KERNEL_CONFIG) ;
 
 # Generate Kernel configuration
 kernel_genconfig:
@@ -87,4 +91,4 @@ app:
 	make -j 8 all || exit ; \
 	cp -r $(OUTPUT_DIR)/app/* ${ROOTFS_DIR}/oemapp
 
-.PHONY: all clean bootloader kernel rootfs app
+.PHONY: all bootloader kernel rootfs app

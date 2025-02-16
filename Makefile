@@ -1,15 +1,17 @@
 # The U-Boot source directory
 UBOOT_DIR := $(CURDIR)/bootloader
-# The Kernel source directory
-KERNEL_DIR := $(CURDIR)/kernel
 # The Busybox source directory
 BUSYBOX_DIR := $(CURDIR)/busybox
+# The Kernel source directory
+export KERNEL_DIR := $(CURDIR)/kernel
 # The App source directory
-APP_DIR := $(CURDIR)/platform/app
+export APP_DIR := $(CURDIR)/platform/app
+# The external Kernel modules directory
+export EXT_KERNEL_MODULES_DIR := $(CURDIR)/platform/kernel/drivers
 
 # The output directory for compiled binaries
-OUTPUT_DIR := $(CURDIR)/output
-ROOTFS_DIR := $(CURDIR)/platform/nfsroot
+export OUTPUT_DIR := $(CURDIR)/output
+export ROOTFS_DIR := $(CURDIR)/platform/nfsroot
 KERNEL_CFG_DIR := $(CURDIR)/platform/kernel/config
 
 # The cross-compiler directory
@@ -106,7 +108,7 @@ app:
 	make -j 8 all || exit ; \
 	cp -r $(OUTPUT_DIR)/app/* ${ROOTFS_DIR}/oemapp
 
-.PHONY: all bootloader kernel rootfs app
+.PHONY: all bootloader kernel rootfs kernel_modules app
 
 clean: clean/bootloader clean/kernel clean/busybox clean/rootfs clean/app
 
@@ -131,6 +133,7 @@ clean/rootfs:
 clean/app:
 	rm -rf $(OUTPUT_DIR)/app ; \
 	rm -rf ${ROOTFS_DIR}/oemapp ; \
-	find $(APP_DIR) -type d -name ".bin" -exec rm -rf {} \;
+	cd $(APP_DIR) ; \
+	make clean || exit ;
 
 .PHONY: clean clean/bootloader clean/kernel clean/busybox clean/rootfs clean/app

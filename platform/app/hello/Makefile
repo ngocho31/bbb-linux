@@ -20,15 +20,15 @@ APP_NAME = hello
 SRC = hello.c
 #####################################################################
 
+# Generate directory
+GEN_DIR = $(APP_DIR)/$(APP_NAME)/.$(TYPE)
 # Output executable name
-TARGET = $(OUTPUT_DIR)/$(APP_NAME)
+TARGET = $(GEN_DIR)/$(APP_NAME)
 # Object file
-OBJ = $(OUTPUT_DIR)/$(SRC:.c=.o)
-# Output directory
-OUTPUT_DIR = $(CURDIR)/.$(TYPE)
+OBJ = $(GEN_DIR)/$(SRC:.c=.o)
 
 # Create the output directory
-$(shell mkdir -p $(OUTPUT_DIR))
+$(shell mkdir -p $(GEN_DIR))
 $(shell mkdir -p $(OUTPUT_APP)/$(TYPE))
 
 # Default target
@@ -40,10 +40,10 @@ $(TARGET): $(OBJ)
 	cp $(TARGET) $(OUTPUT_APP)/$(TYPE)
 
 # Compile source into object file
-$(OUTPUT_DIR)/%.o: %.c
+$(GEN_DIR)/%.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
-	rm -rf $(OUTPUT_DIR)
+	rm -rf $(GEN_DIR)
 
 .PHONY: all clean

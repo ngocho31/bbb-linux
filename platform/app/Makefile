@@ -2,7 +2,7 @@ SUBDIRS = hello
 
 export CFLAGS := -Wall
 
-export OUTPUT_APP := $(CURDIR)/../../output/app
+export OUTPUT_APP := $(OUTPUT_DIR)/app
 
 all:
 	for dir in $(SUBDIRS); do \

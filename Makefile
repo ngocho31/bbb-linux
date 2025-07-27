@@ -12,21 +12,22 @@ export EXT_KERNEL_MODULES_DIR := $(CURDIR)/platform/kernel/drivers
 # The output directory for compiled binaries
 export OUTPUT_DIR := $(CURDIR)/output
 export ROOTFS_DIR := $(CURDIR)/platform/nfsroot
+UBOOT_CFG_DIR := $(CURDIR)/platform/bootloader/config
 KERNEL_CFG_DIR := $(CURDIR)/platform/kernel/config
 
 # The cross-compiler directory
-export PATH := $(PATH):${HOME}/x-tools/arm-bbb-linux-musleabihf/bin/
+export PATH := $(PATH):${HOME}/x-tools/arm-none-linux-musleabihf/bin/
 # The target architecture and platform
 export ARCH := arm
 
 # Cross-compiler settings
-export CROSS_COMPILE := ${HOME}/x-tools/arm-bbb-linux-musleabihf/bin/arm-linux-
+export CROSS_COMPILE := arm-linux-
 export CC := $(CROSS_COMPILE)gcc
 export AS := $(CROSS_COMPILE)as
 export LD := $(CROSS_COMPILE)ld
 
 # U-Boot configuration for the target platform
-UBOOT_CONFIG := am335x_evm_defconfig
+UBOOT_CONFIG := am335x_bbb_defconfig
 UBOOT_DTB := am335x-boneblack
 
 # Kernel configuration for the target platform
@@ -44,6 +45,13 @@ all: pre_build bootloader kernel rootfs app
 pre_build:
 	printf "Install oem config..." ; \
 	$(CURDIR)/tools/install.sh || exit ;
+
+# Modify U-boot configuration
+bootloader_menuconfig:
+	cd $(UBOOT_DIR) ; \
+	make $(UBOOT_CONFIG) menuconfig O=build ; \
+	make savedefconfig O=build ; \
+	cp build/defconfig $(UBOOT_CFG_DIR)/$(UBOOT_CONFIG) ;
 
 # Generate U-boot configuration
 bootloader_genconfig:
